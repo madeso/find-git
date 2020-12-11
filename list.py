@@ -62,13 +62,13 @@ class Program:
                 pass
             else:
                 print(f.folder)
-                print(f.repo)
-                print(f.status)
+                print('  ', f.repo)
+                print('  ', f.status)
                 print()
         print()
         print('non in git:')
         for f in self.nons:
-            print(f)
+            print('  ', f)
 
 
 def main():
