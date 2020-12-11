@@ -118,11 +118,11 @@ class Program:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Find git folders')
-    parser.add_argument('--include-noaction', action='store_true')
-    parser.add_argument('--no-git', action='store_false', dest='git')
-    parser.add_argument('--recursive', action='store_true')
-    parser.add_argument('--sh', action='store_true')
+    parser = argparse.ArgumentParser(description='Find git and non-git folders in your dev folder')
+    parser.add_argument('--include-noaction', action='store_true', help="Include repos that also contain no action")
+    parser.add_argument('--no-git', action='store_false', dest='git', help="Don't check each git repo(that can take some time). It also sets action to <unknown> so it will be always be included")
+    parser.add_argument('--recursive', action='store_true', help="Go into each non-git repo and report git or non-git folders in that too")
+    parser.add_argument('--sh', action='store_true', help="Instead of reporting, write a 'git clone' sh script that will clone the structure, implies no-git")
 
     args = parser.parse_args()
     
