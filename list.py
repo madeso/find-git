@@ -2,8 +2,11 @@
 import os
 import subprocess
 
-def all_folders_in(d):
-    return [os.path.join(d, o) for o in os.listdir(d) if os.path.isdir(os.path.join(d,o))]
+def all_folders_in(root):
+    for relative_path in os.listdir(root):
+        absolute_path = os.path.join(root, relative_path)
+        if os.path.isdir(absolute_path):
+            yield absolute_path
 
 
 class Gitrepo:
@@ -12,8 +15,8 @@ class Gitrepo:
         self.repo = repo
 
 
-def is_folder_a_git_repo(dd):
-    return os.path.isdir(os.path.join(dd, '.git'))
+def is_folder_a_git_repo(folder):
+    return os.path.isdir(os.path.join(folder, '.git'))
 
 
 class Program:
@@ -21,13 +24,12 @@ class Program:
     nons = []
 
     def run(self, root):
-        dirs = all_folders_in(root)
-        for dd in dirs:
-            if is_folder_a_git_repo(dd):
-                remote = subprocess.check_output(["git", "remote", '-v'], cwd=dd, universal_newlines=True)
-                self.gits.append(Gitrepo(dd, remote))
+        for folder in all_folders_in(root):
+            if is_folder_a_git_repo(folder):
+                remote = subprocess.check_output(["git", "remote", '-v'], cwd=folder, universal_newlines=True)
+                self.gits.append(Gitrepo(folder, remote))
             else:
-                self.nons.append(dd)
+                self.nons.append(folder)
 
     def report(self):
         for f in self.gits:
