@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import argparse
+
 
 def all_folders_in(root):
     for relative_path in os.listdir(root):
@@ -54,22 +56,29 @@ class Program:
             else:
                 self.nons.append(folder)
 
-    def report(self):
+    def report(self, include_noaction):
         for f in self.gits:
-            print(f.folder)
-            print(f.repo)
-            print(f.status)
-            print()
+            if include_noaction==False and f.status=='':
+                pass
+            else:
+                print(f.folder)
+                print(f.repo)
+                print(f.status)
+                print()
         print()
-        print('non git:')
+        print('non in git:')
         for f in self.nons:
             print(f)
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Find git folders')
+    parser.add_argument('--include-noaction', action='store_true')
+
+    args = parser.parse_args()
     p = Program()
     p.run(os.getcwd())
-    p.report()
+    p.report(args.include_noaction)
 
 if __name__ == "__main__":
     main()
