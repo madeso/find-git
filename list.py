@@ -47,14 +47,31 @@ class Program:
     gits = []
     nons = []
 
-    def run(self, root: str, git: bool):
+    def run(self, root: str, git: bool, recursive: bool, impl_is_first = True) -> bool:
+        git_found = False
+        nons = []
         for folder in all_folders_in(root):
             if is_folder_a_git_repo(folder):
                 remote = git_get_remote(folder)
                 status = git_status(folder) if git else '<unknown>'
                 self.gits.append(Gitrepo(folder, remote, status))
+                git_found = True
             else:
-                self.nons.append(folder)
+                add_folder = True
+                if recursive:
+                    new_root = os.path.join(root, folder)
+                    found = self.run(new_root, git, recursive, impl_is_first=False)
+                    if found:
+                        git_found = True
+                        add_folder = False
+
+                if add_folder:
+                    nons.append(folder)
+            
+        if git_found == True or impl_is_first:
+            for n in nons:
+                self.nons.append(n)
+        return git_found
 
     def report(self, include_noaction: bool):
         for f in self.gits:
@@ -66,7 +83,7 @@ class Program:
                 print('  ', f.status)
                 print()
         print()
-        print('non in git:')
+        print('not in git:')
         for f in self.nons:
             print('  ', f)
 
@@ -75,10 +92,11 @@ def main():
     parser = argparse.ArgumentParser(description='Find git folders')
     parser.add_argument('--include-noaction', action='store_true')
     parser.add_argument('--no-git', action='store_false', dest='git')
+    parser.add_argument('--recursive', action='store_true')
 
     args = parser.parse_args()
     p = Program()
-    p.run(os.getcwd(), args.git)
+    p.run(root=os.getcwd(), git=args.git, recursive=args.recursive)
     p.report(args.include_noaction)
 
 if __name__ == "__main__":
