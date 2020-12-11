@@ -26,7 +26,13 @@ class Program:
     def run(self, root):
         for folder in all_folders_in(root):
             if is_folder_a_git_repo(folder):
-                remote = subprocess.check_output(["git", "remote", '-v'], cwd=folder, universal_newlines=True)
+                remote = ''
+
+                output = subprocess.check_output(["git", "remote", '-v'], cwd=folder, universal_newlines=True)
+                lines = output.splitlines()
+                if len(lines) > 0:
+                    first_line = lines[0]
+                    remote = first_line.replace('\t', ' ').split(' ', maxsplit=3)[1]
                 self.gits.append(Gitrepo(folder, remote))
             else:
                 self.nons.append(folder)
