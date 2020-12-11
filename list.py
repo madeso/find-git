@@ -4,7 +4,7 @@ import subprocess
 import argparse
 
 
-def all_folders_in(root):
+def all_folders_in(root: str):
     for relative_path in os.listdir(root):
         absolute_path = os.path.join(root, relative_path)
         if os.path.isdir(absolute_path):
@@ -12,17 +12,17 @@ def all_folders_in(root):
 
 
 class Gitrepo:
-    def __init__(self, folder, repo, status):
+    def __init__(self, folder: str, repo: str, status: str):
         self.folder = folder
         self.repo = repo
         self.status = status
 
 
-def is_folder_a_git_repo(folder):
+def is_folder_a_git_repo(folder: str) -> bool:
     return os.path.isdir(os.path.join(folder, '.git'))
 
 
-def git_get_remote(folder):
+def git_get_remote(folder: str) -> str:
     output = subprocess.check_output(["git", "remote", '-v'], cwd=folder, universal_newlines=True)
     lines = output.splitlines()
     
@@ -34,7 +34,7 @@ def git_get_remote(folder):
     return remote
 
 
-def git_status(folder):
+def git_status(folder: str) -> str:
     output = subprocess.check_output(['git', 'status', '--porcelain=1'], cwd=folder, universal_newlines=True).splitlines()
     changes = len(output)
     output = subprocess.check_output(['git', 'status', '--porcelain=2', '--branch'], cwd=folder, universal_newlines=True).splitlines()[:4]
@@ -47,7 +47,7 @@ class Program:
     gits = []
     nons = []
 
-    def run(self, root, git):
+    def run(self, root: str, git: bool):
         for folder in all_folders_in(root):
             if is_folder_a_git_repo(folder):
                 remote = git_get_remote(folder)
@@ -56,7 +56,7 @@ class Program:
             else:
                 self.nons.append(folder)
 
-    def report(self, include_noaction):
+    def report(self, include_noaction: bool):
         for f in self.gits:
             if include_noaction==False and f.status=='':
                 pass
