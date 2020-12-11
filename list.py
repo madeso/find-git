@@ -73,7 +73,7 @@ class Program:
                 self.nons.append(n)
         return git_found
 
-    def report(self, include_noaction: bool):
+    def report_status(self, include_noaction: bool):
         for f in self.gits:
             if include_noaction==False and f.status=='':
                 pass
@@ -86,6 +86,17 @@ class Program:
         print('not in git:')
         for f in self.nons:
             print('  ', f)
+    
+    def report_sh(self):
+        for repo in (r for r in self.gits if r.repo != ''):
+            repo_name = repo.repo.split('/')[-1]
+            folder_name = os.path.basename(repo.folder)
+            if ' ' in folder_name:
+                folder_name = '"{}"'.format(folder_name)
+            if repo_name != folder_name:
+                print('git clone {} {}'.format(repo.repo, folder_name))
+            else:
+                print('git clone {}'.format(repo.repo))
 
 
 def main():
@@ -93,11 +104,16 @@ def main():
     parser.add_argument('--include-noaction', action='store_true')
     parser.add_argument('--no-git', action='store_false', dest='git')
     parser.add_argument('--recursive', action='store_true')
+    parser.add_argument('--sh', action='store_true')
 
     args = parser.parse_args()
+    sh = args.sh
     p = Program()
-    p.run(root=os.getcwd(), git=args.git, recursive=args.recursive)
-    p.report(args.include_noaction)
+    p.run(root=os.getcwd(), git=args.git and not sh, recursive=args.recursive)
+    if sh:
+        p.report_sh()
+    else:
+        p.report_status(args.include_noaction)
 
 if __name__ == "__main__":
     main()
