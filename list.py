@@ -47,11 +47,11 @@ class Program:
     gits = []
     nons = []
 
-    def run(self, root):
+    def run(self, root, git):
         for folder in all_folders_in(root):
             if is_folder_a_git_repo(folder):
                 remote = git_get_remote(folder)
-                status = git_status(folder)
+                status = git_status(folder) if git else '<unknown>'
                 self.gits.append(Gitrepo(folder, remote, status))
             else:
                 self.nons.append(folder)
@@ -74,10 +74,11 @@ class Program:
 def main():
     parser = argparse.ArgumentParser(description='Find git folders')
     parser.add_argument('--include-noaction', action='store_true')
+    parser.add_argument('--no-git', action='store_false', dest='git')
 
     args = parser.parse_args()
     p = Program()
-    p.run(os.getcwd())
+    p.run(os.getcwd(), args.git)
     p.report(args.include_noaction)
 
 if __name__ == "__main__":
