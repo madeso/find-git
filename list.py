@@ -2,6 +2,7 @@
 import os
 import subprocess
 import argparse
+import itertools
 
 
 def all_folders_in(root: str):
@@ -87,16 +88,33 @@ class Program:
         for f in self.nons:
             print('  ', f)
     
-    def report_sh(self):
+    def report_sh(self, root: str):
+        commands = []
         for repo in (r for r in self.gits if r.repo != ''):
             repo_name = repo.repo.split('/')[-1]
+            rp = os.path.relpath(repo.folder, root)
+            relative_path = '/'.join(rp.split('\\')[:-1])
             folder_name = os.path.basename(repo.folder)
             if ' ' in folder_name:
                 folder_name = '"{}"'.format(folder_name)
+            
+            command = 'git clone {}'.format(repo.repo)
             if repo_name != folder_name:
-                print('git clone {} {}'.format(repo.repo, folder_name))
-            else:
-                print('git clone {}'.format(repo.repo))
+                command = 'git clone {} {}'.format(repo.repo, folder_name)
+            
+            commands.append( (relative_path, command) )
+        
+        relative_path_key = lambda x: x[0]
+        for relative_path, group in itertools.groupby(sorted(commands, key=relative_path_key), relative_path_key):
+            if relative_path != '':
+                print('mkdir {}'.format(relative_path))
+                print('cd {}'.format(relative_path))
+            for command in group:
+                print(command[1])
+            if relative_path != '':
+                back = '/'.join('..' for _ in relative_path.split('/'))
+                print('cd {}'.format(back))
+            print("")
 
 
 def main():
@@ -107,13 +125,18 @@ def main():
     parser.add_argument('--sh', action='store_true')
 
     args = parser.parse_args()
+    
     sh = args.sh
+    root = os.getcwd()
+
     p = Program()
-    p.run(root=os.getcwd(), git=args.git and not sh, recursive=args.recursive)
+    p.run(root=root, git=args.git and not sh, recursive=args.recursive)
+    
     if sh:
-        p.report_sh()
+        p.report_sh(root)
     else:
         p.report_status(args.include_noaction)
+
 
 if __name__ == "__main__":
     main()
